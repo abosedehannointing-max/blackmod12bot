@@ -11,7 +11,7 @@ import os
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Store subscribed users (note: resets on restart - for production use database)
+# Store subscribed users
 subscribed_users = set()
 
 # Motivational quotes
@@ -68,8 +68,11 @@ async def post_init(application: Application):
     """Setup scheduler after bot initialization"""
     scheduler = BackgroundScheduler()
     
+    def send_messages():
+        asyncio.create_task(send_motivation(application.bot))
+    
     scheduler.add_job(
-        lambda: asyncio.create_task(send_motivation(application.bot)),
+        send_messages,
         trigger=IntervalTrigger(hours=2),
         id='motivation_job'
     )
